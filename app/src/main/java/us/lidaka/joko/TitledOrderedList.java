@@ -11,9 +11,6 @@ import java.util.List;
 
 // TODO: probably create a base class like TitledList and subtype numeral labeling, item completion action (check or delete), ...
 
-/**
- * Created by alidaka on 4/27/15.
- */
 public class TitledOrderedList implements Serializable {
     private String mTitle;
     private List<ListItem> mListItems;
@@ -30,11 +27,21 @@ public class TitledOrderedList implements Serializable {
         fos.close();
     }
 
-    public void AddItem(Context context, String text) throws FileNotFoundException, IOException {
-        AddItem(context, new ListItem(text));
+    /*
+    private void loadFromFile(String filename) {
+        FileInputStream fis = context.openFileInput(fileName);
+        ObjectInputStream is = new ObjectInputStream(fis);
+        SimpleClass simpleClass = (SimpleClass) is.readObject();
+        is.close();
+        fis.close();
+    }
+    */
+
+    public void addItem(Context context, String text) throws IOException {
+        addItem(context, new ListItem(text));
     }
 
-    public void AddItem(Context context, ListItem li) throws FileNotFoundException, IOException {
+    public void addItem(Context context, ListItem li) throws IOException {
         mListItems.add(li);
         updateChanges(context);
     }

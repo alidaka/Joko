@@ -22,8 +22,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
@@ -46,8 +44,6 @@ public class NavigationDrawerFragment extends Fragment {
      * A pointer to the current callbacks instance (the Activity).
      */
     private NavigationDrawerCallbacks mCallbacks;
-
-    private ArrayList<TitledOrderedList> mLists;
 
     /**
      * Helper component that ties the action bar to the navigation drawer.
@@ -201,7 +197,7 @@ public class NavigationDrawerFragment extends Fragment {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(mLists.get(position).getTitle());
+            mCallbacks.onNavigationDrawerItemSelected(position);
         }
     }
 
@@ -210,15 +206,6 @@ public class NavigationDrawerFragment extends Fragment {
         super.onAttach(activity);
         try {
             mCallbacks = (NavigationDrawerCallbacks) activity;
-
-            // TODO: load existing lists here
-            // mLists = ...
-            {
-                mLists = new ArrayList<TitledOrderedList>();
-                mLists.add(new TitledOrderedList("first list"));
-                mLists.add(new TitledOrderedList("second list"));
-                mLists.add(new TitledOrderedList("third list"));
-            }
 
         } catch (ClassCastException e) {
             throw new ClassCastException("Activity must implement NavigationDrawerCallbacks.");
@@ -291,6 +278,6 @@ public class NavigationDrawerFragment extends Fragment {
         /**
          * Called when an item in the navigation drawer is selected.
          */
-        void onNavigationDrawerItemSelected(String listTitle);
+        void onNavigationDrawerItemSelected(int position);
     }
 }

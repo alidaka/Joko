@@ -6,17 +6,15 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
+import java.util.ArrayList;
 
 
 public class MainNotes extends Activity
@@ -32,12 +30,12 @@ public class MainNotes extends Activity
      */
     private CharSequence mTitle;
 
+    private ArrayList<TitledOrderedList> mLists;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_notes);
-
-        // TODO: load pre-existing lists here(?), pass them to the NavigationDrawerFragment
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -47,15 +45,41 @@ public class MainNotes extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+
+        // TODO: load pre-existing lists here(?), pass them to the NavigationDrawerFragment
+        {
+            mLists = new ArrayList<TitledOrderedList>();
+            mLists.add(new TitledOrderedList("first list"));
+            mLists.add(new TitledOrderedList("second list"));
+            mLists.add(new TitledOrderedList("third list"));
+
+            Context context = getApplicationContext();
+            try {
+                mLists.get(0).addItem(context, "first item!");
+                mLists.get(0).addItem(context, "01");
+                mLists.get(0).addItem(context, "02");
+                mLists.get(1).addItem(context, "second list");
+                mLists.get(1).addItem(context, "11");
+                mLists.get(1).addItem(context, "12");
+                mLists.get(1).addItem(context, "13");
+                mLists.get(2).addItem(context, "list 3");
+            }
+            catch(Exception e){}
+        }
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(String listTitle) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(listTitle))
-                .commit();
+    public void onNavigationDrawerItemSelected(int position) {
+        if ((mLists != null) && (mLists.size() > position)) {
+            String listTitle = mLists.get(position).getTitle();
+
+            // update the main content by replacing fragments
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, PlaceholderFragment.newInstance(listTitle))
+                    .commit();
+        }
     }
 
     public void onSectionAttached(String title) {
@@ -68,7 +92,6 @@ public class MainNotes extends Activity
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -128,6 +151,7 @@ public class MainNotes extends Activity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            // TODO: is this where we create the actual ListView?
             View rootView = inflater.inflate(R.layout.fragment_main_notes, container, false);
             return rootView;
         }
