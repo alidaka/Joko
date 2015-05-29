@@ -74,10 +74,6 @@ public class NavigationDrawerFragment extends Fragment {
             mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
             mFromSavedInstanceState = true;
         }
-
-        // TODO: figure out why if we move this to the beginning of setUp, the background is all grey :P
-        // Select either the default item (0) or the last selected item.
-        selectItem(mCurrentSelectedPosition);
     }
 
     @Override
@@ -122,6 +118,9 @@ public class NavigationDrawerFragment extends Fragment {
      * @param drawerLayout The DrawerLayout containing this fragment's UI.
      */
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
+        // Select either the default item (0) or the last selected item.
+        selectItem(mCurrentSelectedPosition);
+
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
 
@@ -249,12 +248,18 @@ public class NavigationDrawerFragment extends Fragment {
             return true;
         }
 
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-            return true;
-        }
+        switch (item.getItemId()) {
+            case R.id.action_addItem:
+                Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
+                return true;
 
-        return super.onOptionsItemSelected(item);
+            case R.id.action_toggleEdit:
+                Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
