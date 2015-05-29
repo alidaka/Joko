@@ -11,4 +11,11 @@ public class ListItem implements Serializable {
     public ListItem(String text) {
         mText = text;
     }
+
+    public String getText() {
+        return mText;
+    }
+
+    @Override
+    public String toString() { return this.getText(); }
 }

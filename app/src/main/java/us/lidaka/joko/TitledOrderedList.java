@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 // TODO: probably create a base class like TitledList and subtype numeral labeling, item completion action (check or delete), ...
@@ -17,9 +18,10 @@ public class TitledOrderedList implements Serializable {
 
     public TitledOrderedList(String title) {
         mTitle = title;
+        mListItems = new ArrayList<ListItem>();
     }
 
-    private void updateChanges(Context context) throws FileNotFoundException, IOException {
+    private void updateChanges(Context context) throws IOException {
         FileOutputStream fos = context.getApplicationContext().openFileOutput(mTitle, Context.MODE_PRIVATE);
         ObjectOutputStream os = new ObjectOutputStream(fos);
         os.writeObject(this);
@@ -49,4 +51,11 @@ public class TitledOrderedList implements Serializable {
     public String getTitle() {
         return mTitle;
     }
+
+    public List<ListItem> getListItems() {
+        return mListItems;
+    }
+
+    @Override
+    public String toString() { return this.getTitle(); }
 }

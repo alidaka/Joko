@@ -13,8 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainNotes extends Activity
@@ -41,13 +44,7 @@ public class MainNotes extends Activity
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-
-
-        // TODO: load pre-existing lists here(?), pass them to the NavigationDrawerFragment
+        // TODO: load pre-existing lists here(?)
         {
             mLists = new ArrayList<TitledOrderedList>();
             mLists.add(new TitledOrderedList("first list"));
@@ -67,17 +64,22 @@ public class MainNotes extends Activity
             }
             catch(Exception e){}
         }
+
+        // Set up the drawer.
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         if ((mLists != null) && (mLists.size() > position)) {
-            String listTitle = mLists.get(position).getTitle();
+            TitledOrderedList list = mLists.get(position);
 
             // update the main content by replacing fragments
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction()
-                    .replace(R.id.container, PlaceholderFragment.newInstance(listTitle))
+                    .replace(R.id.container, PlaceholderFragment.newInstance(list))
                     .commit();
         }
     }
@@ -137,10 +139,10 @@ public class MainNotes extends Activity
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(String listTitle) {
+        public static PlaceholderFragment newInstance(TitledOrderedList list) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putString(ARG_SECTION_NUMBER, listTitle);
+            args.putSerializable(ARG_SECTION_NUMBER, list);
             fragment.setArguments(args);
             return fragment;
         }
@@ -152,15 +154,30 @@ public class MainNotes extends Activity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             // TODO: is this where we create the actual ListView?
-            View rootView = inflater.inflate(R.layout.fragment_main_notes, container, false);
-            return rootView;
+            ListView view = (ListView) inflater.inflate(
+                    R.layout.fragment_main_notes, container, false);
+
+            TitledOrderedList list = (TitledOrderedList)getArguments().getSerializable(ARG_SECTION_NUMBER);
+
+            // TODO: this is a hack, I guess ListItems need to come with their own ArrayAdapters/toStrings
+            List<String> strings = new ArrayList<String>();
+            for (ListItem li : list.getListItems()) {
+                strings.add(li.getText());
+            }
+            view.setAdapter(new ArrayAdapter<String>(
+                    this.getActivity(),
+                    android.R.layout.simple_list_item_1,
+                    strings));
+            return view;
         }
 
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            ((MainNotes) activity).onSectionAttached(
-                    getArguments().getString(ARG_SECTION_NUMBER));
+
+            TitledOrderedList list = (TitledOrderedList)getArguments().getSerializable(ARG_SECTION_NUMBER);
+
+            ((MainNotes) activity).onSectionAttached(list.getTitle());
         }
     }
 

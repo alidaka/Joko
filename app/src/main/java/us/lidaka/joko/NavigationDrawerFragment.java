@@ -75,6 +75,7 @@ public class NavigationDrawerFragment extends Fragment {
             mFromSavedInstanceState = true;
         }
 
+        // TODO: figure out why if we move this to the beginning of setUp, the background is all grey :P
         // Select either the default item (0) or the last selected item.
         selectItem(mCurrentSelectedPosition);
     }
