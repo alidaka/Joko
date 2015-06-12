@@ -54,7 +54,7 @@ public class NavigationDrawerFragment extends Fragment {
     private ListView mDrawerListView;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedPosition = 0;
+    private long mCurrentSelectedId = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
@@ -71,7 +71,7 @@ public class NavigationDrawerFragment extends Fragment {
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
         if (savedInstanceState != null) {
-            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
+            mCurrentSelectedId = savedInstanceState.getInt(STATE_SELECTED_POSITION);
             mFromSavedInstanceState = true;
         }
     }
@@ -88,22 +88,23 @@ public class NavigationDrawerFragment extends Fragment {
                              Bundle savedInstanceState) {
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
+
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
+                selectItem(position, id);
             }
         });
+
+        // TODO: need a different (custom?) Adapter here, so we can set the elements' IDs properly
         mDrawerListView.setAdapter(new ArrayAdapter<String>(
                 getActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                }));
-        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+                ListManager.getInstance().getTitles()));
+
+        mDrawerListView.setItemChecked((int)mCurrentSelectedId, true);
+
         return mDrawerListView;
     }
 
@@ -119,7 +120,7 @@ public class NavigationDrawerFragment extends Fragment {
      */
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
         // Select either the default item (0) or the last selected item.
-        selectItem(mCurrentSelectedPosition);
+        selectItem((int)mCurrentSelectedId, mCurrentSelectedId);
 
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
@@ -177,6 +178,7 @@ public class NavigationDrawerFragment extends Fragment {
             mDrawerLayout.openDrawer(mFragmentContainerView);
         }
 
+        // TODO: figure out what's going on here:
         // Defer code dependent on restoration of previous instance state.
         mDrawerLayout.post(new Runnable() {
             @Override
@@ -188,8 +190,8 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    private void selectItem(int position) {
-        mCurrentSelectedPosition = position;
+    private void selectItem(int position, long id) {
+        mCurrentSelectedId = id;
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);
         }
@@ -197,7 +199,7 @@ public class NavigationDrawerFragment extends Fragment {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
+            mCallbacks.onNavigationDrawerItemSelected(id);
         }
     }
 
@@ -221,7 +223,7 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
+        outState.putInt(STATE_SELECTED_POSITION, (int)mCurrentSelectedId);
     }
 
     @Override
@@ -248,18 +250,7 @@ public class NavigationDrawerFragment extends Fragment {
             return true;
         }
 
-        switch (item.getItemId()) {
-            case R.id.action_addItem:
-                Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-                return true;
-
-            case R.id.action_toggleEdit:
-                Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -284,6 +275,6 @@ public class NavigationDrawerFragment extends Fragment {
         /**
          * Called when an item in the navigation drawer is selected.
          */
-        void onNavigationDrawerItemSelected(int position);
+        void onNavigationDrawerItemSelected(long id);
     }
 }

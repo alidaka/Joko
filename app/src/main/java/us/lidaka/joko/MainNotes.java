@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +34,6 @@ public class MainNotes extends Activity
      */
     private CharSequence mTitle;
 
-    private ArrayList<TitledOrderedList> mLists;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,27 +43,6 @@ public class MainNotes extends Activity
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
-        // TODO: load pre-existing lists here(?)
-        {
-            mLists = new ArrayList<TitledOrderedList>();
-            mLists.add(new TitledOrderedList("first list"));
-            mLists.add(new TitledOrderedList("second list"));
-            mLists.add(new TitledOrderedList("third list"));
-
-            Context context = getApplicationContext();
-            try {
-                mLists.get(0).addItem(context, "first item!");
-                mLists.get(0).addItem(context, "01");
-                mLists.get(0).addItem(context, "02");
-                mLists.get(1).addItem(context, "second list");
-                mLists.get(1).addItem(context, "11");
-                mLists.get(1).addItem(context, "12");
-                mLists.get(1).addItem(context, "13");
-                mLists.get(2).addItem(context, "list 3");
-            }
-            catch(Exception e){}
-        }
-
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
@@ -72,16 +50,14 @@ public class MainNotes extends Activity
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        if ((mLists != null) && (mLists.size() > position)) {
-            TitledOrderedList list = mLists.get(position);
+    public void onNavigationDrawerItemSelected(long id) {
+        // TODO: translate position to id
 
-            // update the main content by replacing fragments
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.container, PlaceholderFragment.newInstance(list))
-                    .commit();
-        }
+        // update the main content by replacing fragments
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, PlaceholderFragment.newInstance(id))
+                .commit();
     }
 
     public void onSectionAttached(String title) {
@@ -115,14 +91,23 @@ public class MainNotes extends Activity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // TODO: this is the "example action" top bar action/text?
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.action_addItem:
+                Toast.makeText(this, "Add an item.", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.action_toggleEdit:
+                Toast.makeText(this, "Something else.", Toast.LENGTH_SHORT).show();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -139,10 +124,10 @@ public class MainNotes extends Activity
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(TitledOrderedList list) {
+        public static PlaceholderFragment newInstance(long id) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putSerializable(ARG_SECTION_NUMBER, list);
+            args.putLong(ARG_SECTION_NUMBER, id);
             fragment.setArguments(args);
             return fragment;
         }
@@ -153,11 +138,11 @@ public class MainNotes extends Activity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            // TODO: is this where we create the actual ListView?
             ListView view = (ListView) inflater.inflate(
                     R.layout.fragment_main_notes, container, false);
 
-            TitledOrderedList list = (TitledOrderedList)getArguments().getSerializable(ARG_SECTION_NUMBER);
+            long listId = getArguments().getLong(ARG_SECTION_NUMBER);
+            TitledOrderedList list = ListManager.getInstance().getList(listId);
 
             // TODO: this is a hack, I guess ListItems need to come with their own ArrayAdapters/toStrings
             List<String> strings = new ArrayList<String>();
@@ -175,8 +160,8 @@ public class MainNotes extends Activity
         public void onAttach(Activity activity) {
             super.onAttach(activity);
 
-            TitledOrderedList list = (TitledOrderedList)getArguments().getSerializable(ARG_SECTION_NUMBER);
-
+            long listId = getArguments().getLong(ARG_SECTION_NUMBER);
+            TitledOrderedList list = ListManager.getInstance().getList(listId);
             ((MainNotes) activity).onSectionAttached(list.getTitle());
         }
     }
