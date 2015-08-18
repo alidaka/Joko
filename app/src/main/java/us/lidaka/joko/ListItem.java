@@ -7,15 +7,31 @@ import java.io.Serializable;
  */
 public class ListItem implements Serializable {
     private String mText;
+    private boolean mIsChecked;
 
     public ListItem(String text) {
         mText = text;
+        mIsChecked = false;
     }
 
     public String getText() {
         return mText;
     }
 
+    public void setText(String text) {
+        mText = text;
+    }
+
+    public boolean getIsChecked() {
+        return mIsChecked;
+    }
+
+    public void setIsChecked(boolean isChecked) {
+        mIsChecked = isChecked;
+    }
+
     @Override
-    public String toString() { return this.getText(); }
+    public String toString() {
+        return this.getText();
+    }
 }

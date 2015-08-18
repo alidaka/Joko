@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,8 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainNotes extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainNotes extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -136,23 +134,28 @@ public class MainNotes extends Activity
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            ListView view = (ListView) inflater.inflate(
-                    R.layout.fragment_main_notes, container, false);
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            ListView view = (ListView) inflater.inflate(R.layout.fragment_main_notes, container, false);
 
             long listId = getArguments().getLong(ARG_SECTION_NUMBER);
             TitledOrderedList list = ListManager.getInstance().getList(listId);
 
-            // TODO: this is a hack, I guess ListItems need to come with their own ArrayAdapters/toStrings
-            List<String> strings = new ArrayList<String>();
-            for (ListItem li : list.getListItems()) {
-                strings.add(li.getText());
+            if (false) {
+                // TODO: this is a hack, I guess ListItems need to come with their own ArrayAdapters/toStrings
+                List<String> strings = new ArrayList<String>();
+                for (int i = 0; i < list.getCount(); i++) {
+                    ListItem li = list.getItem(i);
+                    strings.add(li.getText());
+                }
+                view.setAdapter(new ArrayAdapter<String>(
+                        this.getActivity(),
+                        //android.R.layout.simple_list_item_1,
+                        android.R.layout.simple_list_item_multiple_choice,
+                        strings));
+            } else  {
+                view.setAdapter(new ListAdapter(this.getActivity(), list));
             }
-            view.setAdapter(new ArrayAdapter<String>(
-                    this.getActivity(),
-                    android.R.layout.simple_list_item_1,
-                    strings));
+
             return view;
         }
 

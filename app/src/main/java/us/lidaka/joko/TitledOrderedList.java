@@ -52,8 +52,17 @@ public class TitledOrderedList implements Serializable {
         return mTitle;
     }
 
-    public List<ListItem> getListItems() {
-        return mListItems;
+    public ListItem getItem(int position) {
+        return mListItems.get(position);
+    }
+
+    public ListItem getItem(long id) {
+        // TODO
+        return null;
+    }
+
+    public int getCount() {
+        return mListItems.size();
     }
 
     @Override
