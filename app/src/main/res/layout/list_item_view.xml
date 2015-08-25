@@ -4,6 +4,11 @@
     android:layout_height="match_parent">
 
     <!-- TODO: figure out an actual resource for this... -->
+    <!-- ref: ~/ADT/sdk/platforms/android-21/data/res/layout/simple_list_item_multiple_choice.xml -->
+    <!-- TODO: how do we edit? perhaps:
+        https://developer.android.com/reference/android/widget/CheckedTextView.html
+        https://developer.android.com/reference/android/widget/EditText.html
+        -->
     <ImageView
         android:id="@+id/list_item_move_handle"
         android:src="#933"
@@ -11,15 +16,21 @@
         android:layout_weight=".05"
         android:layout_height="match_parent" />
 
-    <TextView
+    <EditText
         android:id="@+id/list_item_text"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:gravity="center_vertical"
+        android:inputType="text|textCapSentences"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
+        android:ellipsize="end"
+        android:imeOptions="actionDone"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+        android:background="?android:attr/selectableItemBackground"
         android:minHeight="?android:attr/listPreferredItemHeightSmall" />
 
     <CheckBox

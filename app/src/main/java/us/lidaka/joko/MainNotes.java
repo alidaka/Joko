@@ -13,19 +13,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainNotes extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainNotes extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks, CompoundButton.OnCheckedChangeListener {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+
+    private PlaceholderFragment mFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -37,11 +41,10 @@ public class MainNotes extends Activity implements NavigationDrawerFragment.Navi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_notes);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
         // Set up the drawer.
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -52,9 +55,11 @@ public class MainNotes extends Activity implements NavigationDrawerFragment.Navi
         // TODO: translate position to id
 
         // update the main content by replacing fragments
+        mFragment = PlaceholderFragment.newInstance(id);
+
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(id))
+                .replace(R.id.container, mFragment)
                 .commit();
     }
 
@@ -76,7 +81,13 @@ public class MainNotes extends Activity implements NavigationDrawerFragment.Navi
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main_notes, menu);
+
+            View switchView = menu.findItem(R.id.action_toggleEdit).getActionView();
+            Switch sw = (Switch)switchView.findViewById(R.id.edit_switch);
+            sw.setOnCheckedChangeListener(this);
+
             restoreActionBar();
+
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -87,25 +98,27 @@ public class MainNotes extends Activity implements NavigationDrawerFragment.Navi
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         switch (item.getItemId()) {
-            case R.id.action_addItem:
-                Toast.makeText(this, "Add an item.", Toast.LENGTH_SHORT).show();
+            case R.id.action_settings:
+                Toast.makeText(this, "Settings...", Toast.LENGTH_SHORT).show();
                 return true;
 
-            case R.id.action_toggleEdit:
-                Toast.makeText(this, "Something else.", Toast.LENGTH_SHORT).show();
+            case R.id.action_addItem:
+                ListView lv = (ListView)((ViewGroup)findViewById(R.id.container)).getChildAt(0);
+                ListAdapter adapter = (ListAdapter)lv.getAdapter();
+                adapter.addItem();
                 return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        ListView lv = (ListView)((ViewGroup)findViewById(R.id.container)).getChildAt(0);
+        ListAdapter adapter = (ListAdapter)lv.getAdapter();
+        adapter.toggleEdit(lv, isChecked);
     }
 
     /**
@@ -140,21 +153,8 @@ public class MainNotes extends Activity implements NavigationDrawerFragment.Navi
             long listId = getArguments().getLong(ARG_SECTION_NUMBER);
             TitledOrderedList list = ListManager.getInstance().getList(listId);
 
-            if (false) {
-                // TODO: this is a hack, I guess ListItems need to come with their own ArrayAdapters/toStrings
-                List<String> strings = new ArrayList<String>();
-                for (int i = 0; i < list.getCount(); i++) {
-                    ListItem li = list.getItem(i);
-                    strings.add(li.getText());
-                }
-                view.setAdapter(new ArrayAdapter<String>(
-                        this.getActivity(),
-                        //android.R.layout.simple_list_item_1,
-                        android.R.layout.simple_list_item_multiple_choice,
-                        strings));
-            } else  {
-                view.setAdapter(new ListAdapter(this.getActivity(), list));
-            }
+            view.setAdapter(new ListAdapter(this.getActivity(), list));
+            // TODO:?? view.setDescendantFocusability(ListView.FOCUS_AFTER_DESCENDANTS);
 
             return view;
         }

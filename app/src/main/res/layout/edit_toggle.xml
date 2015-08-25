@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <Switch android:id="@+id/edit_switch"
+        android:thumb="@drawable/edit_toggle_thumb"
+        android:text=""
+
+
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
+    <!--
+    android:layout_gravity="center_vertical|right"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    -->
+
+</RelativeLayout>

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -43,15 +44,23 @@ public class ListAdapter extends BaseAdapter {
 
         View view;
         if (convertView == null) {
-            view = new ListItemView(mContext, li);
+            // Heuristic to check if this probably just got added and the intent is to edit
+            boolean focusEdit = li.getText().isEmpty() && (position == (mList.getCount() - 1));
+            view = new ListItemView(mContext, li, focusEdit);
         } else {
             view = convertView;
         }
 
-        TextView text = (TextView)view.findViewById(R.id.list_item_text);
-        text.setText(li.getText());
-
         return view;
+    }
+
+    public void addItem() {
+        mList.addItem(mContext, "");
+        notifyDataSetChanged();
+    }
+
+    public void toggleEdit(ListView listView, boolean enableEdit) {
+
     }
 
 }

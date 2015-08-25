@@ -2,18 +2,26 @@ package us.lidaka.joko;
 
 import android.content.Context;
 import android.gesture.Gesture;
+import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /**
  * Created by augustus on 8/7/15.
  */
-public class ListItemView extends LinearLayout {
+public class ListItemView extends LinearLayout implements TextView.OnFocusChangeListener, TextView.OnEditorActionListener {
     private ListItem mListItem;
     private GestureDetector mGestureDetector;
 
@@ -22,7 +30,7 @@ public class ListItemView extends LinearLayout {
         return mGestureDetector.onTouchEvent(event);
     }
 
-    public ListItemView(Context context, ListItem li) {
+    public ListItemView(Context context, ListItem li, boolean focusEdit) {
         super(context);
 
         mListItem = li;
@@ -32,36 +40,54 @@ public class ListItemView extends LinearLayout {
 
         CheckBox cb = (CheckBox)findViewById(R.id.list_item_checkbox);
         cb.setChecked(mListItem.getIsChecked());
+        setIsChecked(mListItem.getIsChecked());
         cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mListItem.setIsChecked(isChecked);
                 setIsChecked(isChecked);
             }
         });
 
+        EditText et = (EditText)findViewById(R.id.list_item_text);
+        et.setText(mListItem.getText());
+        // another option, use setInputType??
+        if (!focusEdit) {
+            et.setFocusable(false); // TODO: toggle based on mode
+        }
+        else {
+            et.setFocusable(true);
+            et.requestFocus();
+        }
+
+        et.setOnEditorActionListener(this);
+        et.setOnFocusChangeListener(this);
+
         mGestureDetector = new GestureDetector(context, new GestureListener());
         mGestureDetector.setIsLongpressEnabled(true);
+    }
 
-        // TODO: this is wrong; I believe here I need a GestureHelper/GestureDetector
-        /*
-        setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        //v.setAlpha(.5f);
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                        //v.setAlpha(1);
-                        return true;
-                    default:
-                        break;
-                }
+    private void updateText(TextView v) {
+        String str = v.getText().toString();
+        mListItem.setText(str);
+    }
 
-                return false;
-            }
-        });
-        */
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        //TODO: is this right? Do we need to check other keys? Should it be on KeyEvent.ACTION_UP instead??
+        //if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+        if (((actionId == EditorInfo.IME_ACTION_DONE) || (actionId == EditorInfo.IME_NULL)) && (event.getAction() == KeyEvent.ACTION_UP)) {
+            updateText(v);
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if (!hasFocus) {
+            updateText((TextView)v);
+        }
     }
 
     private class GestureListener implements GestureDetector.OnGestureListener {
@@ -97,8 +123,6 @@ public class ListItemView extends LinearLayout {
     }
 
     private void setIsChecked(boolean isChecked) {
-        mListItem.setIsChecked(isChecked);
-
         // TODO: consider pulling this styling out
         setAlpha(isChecked ? .5f : 1);
     }

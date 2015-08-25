@@ -21,6 +21,25 @@ public class TitledOrderedList implements Serializable {
         mListItems = new ArrayList<ListItem>();
     }
 
+    private void updateChangesAsync(Context context) {
+        // TODO: implement an Executor which handles these better, rather than immediately spinning a dedicated thread
+        final Context finalContext = context;
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    updateChanges(finalContext);
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        t.start();
+    }
+
     private void updateChanges(Context context) throws IOException {
         FileOutputStream fos = context.getApplicationContext().openFileOutput(mTitle, Context.MODE_PRIVATE);
         ObjectOutputStream os = new ObjectOutputStream(fos);
@@ -39,13 +58,13 @@ public class TitledOrderedList implements Serializable {
     }
     */
 
-    public void addItem(Context context, String text) throws IOException {
+    public void addItem(Context context, String text) {
         addItem(context, new ListItem(text));
     }
 
-    public void addItem(Context context, ListItem li) throws IOException {
+    public void addItem(Context context, ListItem li) {
         mListItems.add(li);
-        updateChanges(context);
+        updateChangesAsync(context);
     }
 
     public String getTitle() {
