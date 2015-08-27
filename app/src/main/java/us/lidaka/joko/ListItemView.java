@@ -1,5 +1,6 @@
 package us.lidaka.joko;
 
+import android.app.Activity;
 import android.content.Context;
 import android.gesture.Gesture;
 import android.graphics.drawable.Drawable;
@@ -11,7 +12,9 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -24,16 +27,19 @@ import android.widget.TextView;
 public class ListItemView extends LinearLayout implements TextView.OnFocusChangeListener, TextView.OnEditorActionListener {
     private ListItem mListItem;
     private GestureDetector mGestureDetector;
+    private ListAdapter mParentAdapter;
+    private boolean mEditingEnabled;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return mGestureDetector.onTouchEvent(event);
     }
 
-    public ListItemView(Context context, ListItem li, boolean focusEdit) {
+    public ListItemView(Context context, ListAdapter parentAdapter, ListItem li, boolean focusEdit) {
         super(context);
 
         mListItem = li;
+        mParentAdapter = parentAdapter;
 
         LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.list_item_view, this, true);
@@ -51,33 +57,76 @@ public class ListItemView extends LinearLayout implements TextView.OnFocusChange
 
         EditText et = (EditText)findViewById(R.id.list_item_text);
         et.setText(mListItem.getText());
-        // another option, use setInputType??
-        if (!focusEdit) {
-            et.setFocusable(false); // TODO: toggle based on mode
-        }
-        else {
-            et.setFocusable(true);
-            et.requestFocus();
-        }
 
         et.setOnEditorActionListener(this);
         et.setOnFocusChangeListener(this);
+
+        if (!focusEdit) {
+            // This object represents a pre-existing element (i.e., user did not just hit "add a new item")
+            if (mParentAdapter.getEditingEnabled()) {
+                enableEditing(et, false);
+            }
+            else {
+                disableEditing(et);
+            }
+        }
+        else {
+            // This object is new
+            enableEditing(et, true);
+        }
 
         mGestureDetector = new GestureDetector(context, new GestureListener());
         mGestureDetector.setIsLongpressEnabled(true);
     }
 
-    private void updateText(TextView v) {
+    private void disableEditing(TextView view) {
+        view.setInputType(InputType.TYPE_NULL); // TODO: toggle based on mode
+        mEditingEnabled = false;
+    }
+
+    private void enableEditing(TextView view, boolean requestFocus) {
+        view.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES); // TODO: toggle based on mode
+        mEditingEnabled = true;
+
+        if (requestFocus) {
+            view.requestFocus();
+        }
+    }
+
+    private void onTextSubmission(TextView v) {
         String str = v.getText().toString();
         mListItem.setText(str);
+
+        disableKeyboard(v);
+
+        if (!mParentAdapter.getEditingEnabled()) {
+            // User just submitted a new element but we're not in edit mode
+            disableEditing(v);
+        }
+    }
+
+    private void enableKeyboard(View view) {
+        if (false) {
+            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        }
+        else {
+            ((Activity)getContext()).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+        //imm.toggleSoftInputFromWindow(view.getWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
+    }
+
+    private void disableKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager)view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
     }
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        //TODO: is this right? Do we need to check other keys? Should it be on KeyEvent.ACTION_UP instead??
-        //if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
-        if (((actionId == EditorInfo.IME_ACTION_DONE) || (actionId == EditorInfo.IME_NULL)) && (event.getAction() == KeyEvent.ACTION_UP)) {
-            updateText(v);
+        boolean actionSubmit = (actionId == EditorInfo.IME_ACTION_DONE) || (actionId == EditorInfo.IME_NULL);
+        boolean keyEventSubmit = (event == null) || (event.getAction() == KeyEvent.ACTION_UP);
+        if (actionSubmit && keyEventSubmit) {
+            onTextSubmission(v);
         }
 
         return true;
@@ -85,8 +134,13 @@ public class ListItemView extends LinearLayout implements TextView.OnFocusChange
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        if (!hasFocus) {
-            updateText((TextView)v);
+        // If focus is changing but editing is not enabled, ignore
+        if (mEditingEnabled) {
+            if (!hasFocus) {
+                onTextSubmission((TextView)v);
+            } else {
+                enableKeyboard(v);
+            }
         }
     }
 

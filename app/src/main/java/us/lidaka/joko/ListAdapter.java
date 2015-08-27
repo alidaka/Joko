@@ -14,12 +14,13 @@ import android.widget.TextView;
 public class ListAdapter extends BaseAdapter {
 
     private TitledOrderedList mList;
-
     private Context mContext;
+    private boolean mEditingEnabled;
 
     public ListAdapter(Context context, TitledOrderedList list) {
         mList = list;
         mContext = context;
+        mEditingEnabled = false;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class ListAdapter extends BaseAdapter {
         if (convertView == null) {
             // Heuristic to check if this probably just got added and the intent is to edit
             boolean focusEdit = li.getText().isEmpty() && (position == (mList.getCount() - 1));
-            view = new ListItemView(mContext, li, focusEdit);
+            view = new ListItemView(mContext, this, li, focusEdit);
         } else {
             view = convertView;
         }
@@ -60,7 +61,12 @@ public class ListAdapter extends BaseAdapter {
     }
 
     public void toggleEdit(ListView listView, boolean enableEdit) {
+        // TODO: plumb this, and notify children
+        mEditingEnabled = enableEdit;
+    }
 
+    public boolean getEditingEnabled() {
+        return mEditingEnabled;
     }
 
 }

@@ -16,6 +16,7 @@
         android:layout_weight=".05"
         android:layout_height="match_parent" />
 
+    <!-- TODO: do we need the inputType here? I don't think so, specified in java when creating -->
     <EditText
         android:id="@+id/list_item_text"
         android:layout_height="wrap_content"
@@ -23,7 +24,6 @@
         android:layout_weight="1"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:gravity="center_vertical"
-        android:inputType="text|textCapSentences"
         android:maxLines="1"
         android:scrollHorizontally="true"
         android:ellipsize="end"
